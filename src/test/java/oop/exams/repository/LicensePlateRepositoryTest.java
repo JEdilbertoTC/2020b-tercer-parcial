@@ -103,6 +103,7 @@ class LicensePlateRepositoryTest {
         LicensePlateRepository licensePlateRepository = new LicensePlateRepository();
         try {
             int tamanio = licensePlateRepository.countByRegion(Region.CENTER);
+            assertThat(tamanio).isEqualTo(1);
         } catch (NullPointerException e) {
 
         }
