@@ -5,13 +5,14 @@ import oop.exams.generator.LicensePlateGenerator;
 import oop.exams.generator.LicensePlateGeneratorFactory;
 import oop.exams.model.Region;
 import oop.exams.repository.LicensePlateRepository;
-
 import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import static org.mockito.Mockito.*;
 
 class LicensePlateServiceTest {
 
-
+    @Test
     public void givenAValidState_whenGenerate_thenLicensePlateIsReturned() throws NotAvailableLicensePlateException {
         // Given:
         LicensePlateGeneratorFactory factory = mock(LicensePlateGeneratorFactory.class);
@@ -37,5 +38,36 @@ class LicensePlateServiceTest {
         verify(generator).generate(state);
         verify(repository).save(Region.CENTER, licensePlate);
         verifyNoMoreInteractions(repository, factory, generator);
+    }
+
+    @Test
+    public void given6License_thenThrowsNotAvailableLicensePlateException() throws NotAvailableLicensePlateException {
+        // Given:
+        LicensePlateGeneratorFactory factory = mock(LicensePlateGeneratorFactory.class);
+        LicensePlateRepository repository = mock(LicensePlateRepository.class);
+        LicensePlateGenerator generator = mock(LicensePlateGenerator.class);
+        LicensePlateService licensePlateService = new LicensePlateService(factory, repository);
+        String state = "SLP";
+        String expectedLicensePlate = "ABC1234";
+
+        when(repository.getRegionByState(state)).thenReturn(Region.CENTER);
+        when(repository.countByRegion(Region.CENTER)).thenReturn(5);
+        when(factory.getInstance(Region.CENTER)).thenReturn(generator);
+        when(generator.generate(state)).thenReturn(expectedLicensePlate);
+
+        // When:
+        try {
+            licensePlateService.generate(state);
+            licensePlateService.generate(state);
+            licensePlateService.generate(state);
+            licensePlateService.generate(state);
+            licensePlateService.generate(state);
+        } catch (NotAvailableLicensePlateException e) {
+            // Then:
+            Assertions.assertThrows(NotAvailableLicensePlateException.class, () -> {
+                licensePlateService.generate(state);
+            });
+        }
+
     }
 }
